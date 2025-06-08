@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网址收藏管理器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+        
+        .app-container {
+            background: rgba(255, 255, 255, 0.93);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .controls {
+            padding: 25px;
+            background: #4a69bd;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .input-group {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .input-group label {
+            display: block;
+            color: white;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #ff9f1a;
+            color: #1a1a2e;
+        }
+        
+        .btn-primary:hover {
+            background: #ff8c00;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-secondary {
+            background: #1a2a6c;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #0f1a4d;
+            transform: translateY(-2px);
+        }
+        
+        .search-container {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .search-container input {
+            padding: 14px 14px 14px 45px;
+            background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%234a69bd' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'%3E%3C/path%3E%3C/svg%3E") no-repeat 15px center;
+        }
+        
+        .bookmarks-container {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state i {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            color: #4a69bd;
+            opacity: 0.6;
+        }
+        
+        .empty-state h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .bookmark-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .bookmark-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1a2a6c;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            background: transparent;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .action-btn:hover {
+            background: #f0f0f0;
+            color: #1a2a6c;
+        }
+        
+        .card-content {
+            padding: 20px;
+            flex-grow: 1;
+        }
+        
+        .card-url {
+            color: #4a69bd;
+            text-decoration: none;
+            word-break: break-all;
+            display: block;
+            margin-bottom: 20px;
+            transition: color 0.3s;
+        }
+        
+        .card-url:hover {
+            color: #1a2a6c;
+            text-decoration: underline;
+        }
+        
+        .card-footer {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            text-align: right;
+        }
+        
+        .visit-btn {
+            padding: 8px 20px;
+            background: #4a69bd;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .visit-btn:hover {
+            background: #1a2a6c;
+        }
+        
+        .favicon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #1a2a6c;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.5s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .bookmarks-container {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-bookmark"></i> 网址收藏管理器</h1>
+            <p>添加、管理和访问您最喜爱的网站。所有数据都保存在您的浏览器中。</p>
+        </header>
+        
+        <div class="app-container">
+            <div class="controls">
+                <div class="input-group">
+                    <label for="siteName">网站名称</label>
+                    <input type="text" id="siteName" placeholder="例如：谷歌搜索">
+                </div>
+                
+                <div class="input-group">
+                    <label for="siteUrl">网站地址</label>
+                    <input type="url" id="siteUrl" placeholder="例如：https://www.google.com">
+                </div>
+                
+                <button id="addBtn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 添加网址
+                </button>
+                
+                <div class="search-container">
+                    <label for="searchInput">搜索收藏</label>
+                    <input type="text" id="searchInput" placeholder="搜索网站名称或地址...">
+                </div>
+            </div>
+            
+            <div class="bookmarks-container" id="bookmarksContainer">
+                <!-- 书签卡片将通过JavaScript动态生成 -->
+                <div class="empty-state">
+                    <i class="fas fa-book-open"></i>
+                    <h2>您的收藏夹是空的</h2>
+                    <p>添加您喜欢的网站以开始使用</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">操作成功！</span>
+    </div>
+    
+    <script>
+        // 获取DOM元素
+        const siteNameInput = document.getElementById('siteName');
+        const siteUrlInput = document.getElementById('siteUrl');
+        const addBtn = document.getElementById('addBtn');
+        const searchInput = document.getElementById('searchInput');
+        const bookmarksContainer = document.getElementById('bookmarksContainer');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        
+        // 书签数组
+        let bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
+        
+        // 显示提示信息
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 验证URL格式
+        function isValidUrl(url) {
+            try {
+                new URL(url);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+        
+        // 添加书签
+        function addBookmark() {
+            const name = siteNameInput.value.trim();
+            let url = siteUrlInput.value.trim();
+            
+            // 验证输入
+            if (!name || !url) {
+                showToast('请填写网站名称和地址');
+                return;
+            }
+            
+            // 确保URL有协议
+            if (!/^https?:\/\//i.test(url)) {
+                url = 'https://' + url;
+            }
+            
+            if (!isValidUrl(url)) {
+                showToast('请输入有效的网址');
+                return;
+            }
+            
+            // 创建新书签对象
+            const newBookmark = {
+                id: Date.now(),
+                name,
+                url
+            };
+            
+            // 添加到数组
+            bookmarks.push(newBookmark);
+            
+            // 保存到localStorage
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+            
+            // 清空输入框
+            siteNameInput.value = '';
+            siteUrlInput.value = '';
+            
+            // 重新渲染书签
+            renderBookmarks();
+            
+            // 显示成功消息
+            showToast('网站已添加到收藏夹！');
+        }
+        
+        // 删除书签
+        function deleteBookmark(id) {
+            bookmarks = bookmarks.filter(bookmark => bookmark.id !== id);
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+            renderBookmarks();
+            showToast('书签已删除');
+        }
+        
+        // 编辑书签
+        function editBookmark(id) {
+            const bookmark = bookmarks.find(b => b.id === id);
+            if (bookmark) {
+                siteNameInput.value = bookmark.name;
+                siteUrlInput.value = bookmark.url;
+                
+                // 删除旧书签
+                bookmarks = bookmarks.filter(b => b.id !== id);
+                localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+                
+                // 重新渲染
+                renderBookmarks();
+                
+                // 滚动到表单
+                document.querySelector('.controls').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        // 渲染书签列表
+        function renderBookmarks(filteredBookmarks = null) {
+            const bookmarksToRender = filteredBookmarks || bookmarks;
+            
+            if (bookmarksToRender.length === 0) {
+                bookmarksContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-book-open"></i>
+                        <h2>${filteredBookmarks ? '未找到匹配的收藏' : '您的收藏夹是空的'}</h2>
+                        <p>${filteredBookmarks ? '尝试其他搜索词' : '添加您喜欢的网站以开始使用'}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            bookmarksContainer.innerHTML = '';
+            
+            bookmarksToRender.forEach(bookmark => {
+                // 获取网站favicon
+                const domain = new URL(bookmark.url).hostname;
+                const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+                
+                const bookmarkElement = document.createElement('div');
+                bookmarkElement.className = 'bookmark-card';
+                bookmarkElement.innerHTML = `
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <img src="${faviconUrl}" class="favicon" alt="favicon">
+                            ${bookmark.name}
+                        </h3>
+                        <div class="card-actions">
+                            <button class="action-btn edit-btn" data-id="${bookmark.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn delete-btn" data-id="${bookmark.id}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <a href="${bookmark.url}" target="_blank" class="card-url">${bookmark.url}</a>
+                    </div>
+                    <div class="card-footer">
+                        <button class="visit-btn" data-url="${bookmark.url}">
+                            <i class="fas fa-external-link-alt"></i> 访问网站
+                        </button>
+                    </div>
+                `;
+                
+                bookmarksContainer.appendChild(bookmarkElement);
+            });
+            
+            // 添加删除事件监听器
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.getAttribute('data-id'));
+                    deleteBookmark(id);
+                });
+            });
+            
+            // 添加编辑事件监听器
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.getAttribute('data-id'));
+                    editBookmark(id);
+                });
+            });
+            
+            // 添加访问事件监听器
+            document.querySelectorAll('.visit-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const url = btn.getAttribute('data-url');
+                    window.open(url, '_blank');
+                });
+            });
+        }
+        
+        // 搜索书签
+        function searchBookmarks() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                renderBookmarks();
+                return;
+            }
+            
+            const filteredBookmarks = bookmarks.filter(bookmark => {
+                return (
+                    bookmark.name.toLowerCase().includes(searchTerm) ||
+                    bookmark.url.toLowerCase().includes(searchTerm)
+                );
+            });
+            
+            renderBookmarks(filteredBookmarks);
+        }
+        
+        // 事件监听器
+        addBtn.addEventListener('click', addBookmark);
+        
+        siteUrlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addBookmark();
+        });
+        
+        searchInput.addEventListener('input', searchBookmarks);
+        
+        // 初始化渲染
+        renderBookmarks();
+    </script>
+</body>
+</html>
